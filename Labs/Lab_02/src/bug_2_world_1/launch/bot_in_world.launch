@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+
+  <arg name="world" default="empty"/> 
+  <arg name="paused" default="false"/>
+  <arg name="use_sim_time" default="true"/>
+  <arg name="gui" default="true"/>
+  <arg name="headless" default="false"/>
+  <arg name="debug" default="false"/>
+  
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find bug_2_world_1)/worlds/obstacle_arena.world"/>
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+    <arg name="gui" value="$(arg gui)"/>
+    <arg name="headless" value="$(arg headless)"/>
+    <arg name="debug" value="$(arg debug)"/>
+  </include>
+
+  
+  <param name="robot_description" command="$(find xacro)/xacro.py '$(find bot_description)/urdf/mybot.xacro'"/>
+
+
+  <node name="bot_0" pkg="gazebo_ros" type="spawn_model" output="screen"
+   args="-urdf -param robot_description -model mybot0 -x -5 -y 0 -z 0 -Y 0.6981  -namespace bot_0" />
+   
+  <node name="tracking_and_control" pkg="bug_2_world_1" type="controller.py" output="screen"/>
+
+</launch>

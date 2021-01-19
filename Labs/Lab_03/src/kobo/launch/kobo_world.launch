@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+
+  <arg name="world" default="empty"/> 
+  <arg name="paused" default="false"/>
+  <arg name="use_sim_time" default="true"/>
+  <arg name="gui" default="true"/>
+  <arg name="headless" default="false"/>
+  <arg name="debug" default="false"/>
+  
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <!-- <arg name="world_name" value="$(find template_a3)/worlds/one_obstacle.world"/> -->
+    <arg name="world_name" value="$(find kobo)/worlds/test.world"/>
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+    <arg name="gui" value="$(arg gui)"/>
+    <arg name="headless" value="$(arg headless)"/>
+    <arg name="debug" value="$(arg debug)"/>
+  </include>
+
+  
+
+  <param name="robot_description" command="$(find xacro)/xacro.py '$(find kobo)/description/urdf/kobo_robot.urdf.xacro'"/>
+
+  <node name="bot_0" pkg="gazebo_ros" type="spawn_model"
+        args="-x -5 -y 0 -z 0 -Y -0.0 -urdf -param robot_description -model mobile_base"/>
+
+<!-- Velocity muxer -->
+  <node pkg="nodelet" type="nodelet" name="mobile_base_nodelet_manager" args="manager"/>
+  <node pkg="nodelet" type="nodelet" name="cmd_vel_mux"
+        args="load yocs_cmd_vel_mux/CmdVelMuxNodelet mobile_base_nodelet_manager">
+    <param name="yaml_cfg_file" value="$(find kobo)/params/mux.yaml" />
+    <remap from="cmd_vel_mux/output" to="mobile_base/commands/velocity"/>
+
+
+  </node>
+
+
+  <!-- <node name="tracking_and_control" pkg="kobo" type="controller.py" output="screen"/> -->
+  <!-- <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
+    <param name="publish_frequency" type="double" value="30.0" />
+  </node>
+
+
+  <node name="bot_0" pkg="gazebo_ros" type="spawn_model" output="screen"
+   args="-urdf -param robot_description -model mybot0 -x -5 -y 0 -z 0 -Y 0.6981  -namespace bot_0" /> -->
+   
+
+</launch>

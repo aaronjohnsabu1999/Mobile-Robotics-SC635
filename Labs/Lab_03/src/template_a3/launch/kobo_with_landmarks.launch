@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+
+  <arg name="world" default="empty"/> 
+  <arg name="paused" default="false"/>
+  <arg name="use_sim_time" default="true"/>
+  <arg name="gui" default="true"/>
+  <arg name="headless" default="false"/>
+  <arg name="debug" default="false"/>
+  
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find template_a3)/worlds/landmarks.world"/>
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+    <arg name="gui" value="$(arg gui)"/>
+    <arg name="headless" value="$(arg headless)"/>
+    <arg name="debug" value="$(arg debug)"/>
+  </include>
+
+  
+
+  <param name="robot_description" command="$(find xacro)/xacro.py '$(find kobo)/description/urdf/kobo_robot_without_mod.urdf.xacro'"/>
+
+  <node name="bot_0" pkg="gazebo_ros" type="spawn_model"
+        args="-x -0 -y 0 -z 0 -Y -0 -urdf -param robot_description -model mobile_base"/>
+
+<!-- Velocity muxer -->
+  <node pkg="nodelet" type="nodelet" name="mobile_base_nodelet_manager" args="manager"/>
+  <node pkg="nodelet" type="nodelet" name="cmd_vel_mux"
+        args="load yocs_cmd_vel_mux/CmdVelMuxNodelet mobile_base_nodelet_manager">
+    <param name="yaml_cfg_file" value="$(find kobo)/params/mux.yaml" />
+    <remap from="cmd_vel_mux/output" to="mobile_base/commands/velocity"/>
+
+
+  </node>
+   
+  <node name="trilateration_data" pkg="template_a3" type="trilateration.py"/>
+  <node name="controller" pkg="template_a3" type="controller.py" output="screen"/>
+</launch>
